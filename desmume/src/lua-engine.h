@@ -128,6 +128,8 @@ void DontWorryLua();
 // but this is an intentional tradeoff to obtain a high speed of checking during later execution
 struct TieredRegion
 {
+	bool empty = true;
+
 	template<unsigned int maxGap>
 	struct Region
 	{
@@ -182,17 +184,22 @@ struct TieredRegion
 		broad.Calculate(bytes);
 		mid.Calculate(bytes);
 		narrow.Calculate(bytes);
+		// the sizu() function is relatively slow.
+		// sinze NotEmpty is called a LOT of times, we calculate empty here
+		// and cache it until next calculation
+		empty = !broad.islands.size();
 	}
 
 	TieredRegion()
 	{
 		std::vector<unsigned int> somevector;
+		empty = true;
 		Calculate(somevector);
 	}
 
 	FORCEINLINE int NotEmpty()
 	{
-		return broad.islands.size();
+		return !empty;
 	}
 
 	// note: it is illegal to call this if NotEmpty() returns 0
